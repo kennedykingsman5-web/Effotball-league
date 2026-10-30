@@ -31,7 +31,8 @@ jobs:
     - name: Create Web Folder
       run: |
         mkdir www
-        echo '<!DOCTYPE html><html><body><h1>GameRec</h1></body></html>' > www/index.html
+        cp index.html www/index.html
+        cp app.js www/app.js
         echo '{"appId":"com.gamerec.app","appName":"GameRec","webDir":"www"}' > capacitor.config.json
       
     - name: Create Android Project
