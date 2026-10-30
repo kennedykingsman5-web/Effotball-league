@@ -23,10 +23,10 @@ jobs:
     - name: Install Dependencies
       run: |
         npm init -y
-        npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
-        npm install @capgo/capacitor-screen-recorder@6
-        npm install @capacitor/camera@6
-        npm install @capacitor/filesystem@6
+        npm install --legacy-peer-deps @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+        npm install --legacy-peer-deps @capgo/capacitor-screen-recorder@6
+        npm install --legacy-peer-deps @capacitor/camera@6
+        npm install --legacy-peer-deps @capacitor/filesystem@6
       
     - name: Create Web Folder
       run: |
@@ -44,7 +44,6 @@ jobs:
         sed -i 's/minSdkVersion = .*/minSdkVersion = 23/g' android/variables.gradle
         sed -i "s/classpath 'com.android.tools.build:gradle:.*'/classpath 'com.android.tools.build:gradle:8.6.0'/g" android/build.gradle
         sed -i 's/gradle-.*-all.zip/gradle-8.9-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
-        # Add JitPack for the screen recorder plugin [citation:1][citation:4]
         echo "allprojects { repositories { maven { url 'https://jitpack.io' } } }" >> android/build.gradle
 
     - name: Sync Web Code to Android
