@@ -1,72 +1,83 @@
-const recordBtn = document.getElementById('recordBtn');
-const statusText = document.getElementById('statusText');
+name: Build GameRec APK
 
-let isRecording = false;
-let startTime;
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
-// Request Storage Permission on Startup
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    if (Capacitor.Plugins.Filesystem) {
-      // Request permission to save files
-      await Capacitor.Plugins.Filesystem.requestPermissions();
-    }
-  } catch (e) {
-    console.log("Permission request error:", e);
-  }
-});
+permissions:
+  contents: write
 
-recordBtn.addEventListener('click', async () => {
-  if (!isRecording) {
-    try {
-      statusText.innerText = "Starting...";
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
       
-      // Check permission again just in case
-      if (Capacitor.Plugins.Filesystem) {
-        const status = await Capacitor.Plugins.Filesystem.checkPermissions();
-        if (status.publicStorage !== 'granted') {
-          await Capacitor.Plugins.Filesystem.requestPermissions();
-        }
-      }
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Install Dependencies
+      run: |
+        npm init -y
+        npm install --legacy-peer-deps @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+        npm install --legacy-peer-deps @capgo/capacitor-screen-recorder@6
+        npm install --legacy-peer-deps @capacitor/filesystem@6
+      
+    - name: Create Web Folder
+      run: |
+        mkdir www
+        cp index.html www/index.html
+        cp app.js www/app.js
+        echo '{"appId":"com.gamerec.app","appName":"GameRec","webDir":"www"}' > capacitor.config.json
+      
+    - name: Create Android Project
+      run: npx cap add android
+      
+    - name: Patch Android SDK and Permissions
+      run: |
+        # Patch SDK versions
+        sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' android/variables.gradle
+        sed -i 's/targetSdkVersion = .*/targetSdkVersion = 35/g' android/variables.gradle
+        sed -i 's/minSdkVersion = .*/minSdkVersion = 23/g' android/variables.gradle
+        sed -i "s/classpath 'com.android.tools.build:gradle:.*'/classpath 'com.android.tools.build:gradle:8.6.0'/g" android/build.gradle
+        sed -i 's/gradle-.*-all.zip/gradle-8.9-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
+        
+        # Add JitPack
+        echo "allprojects { repositories { maven { url 'https://jitpack.io' } } }" >> android/build.gradle
 
-      await Capacitor.Plugins.ScreenRecorder.start({
-        notificationTitle: "GameRec is running",
-        notificationText: "Recording your screen..."
-      });
-      
-      isRecording = true;
-      recordBtn.classList.add('recording');
-      startTime = Date.now();
-      
-      updateTimer();
-      
-    } catch (e) {
-      statusText.innerText = "Error: " + e.message;
-      alert("Error: " + e.message);
-      console.error(e);
-    }
-  } else {
-    try {
-      statusText.innerText = "Saving...";
-      recordBtn.classList.remove('recording');
-      
-      const result = await Capacitor.Plugins.ScreenRecorder.stop();
-      
-      isRecording = false;
-      statusText.innerText = "Saved to Gallery!";
-      alert("Video saved to your phone gallery!");
-      
-    } catch (e) {
-      statusText.innerText = "Error: " + e.message;
-      alert("Error: " + e.message);
-      console.error(e);
-    }
-  }
-});
+        # Force Add Android Permissions to Manifest
+        sed -i '/<application/i \
+        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> \
+        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> \
+        <uses-permission android:name="android.permission.RECORD_AUDIO" /> \
+        <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> \
+        <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" /> \
+        ' android/app/src/main/AndroidManifest.xml
 
-function updateTimer() {
-  if (!isRecording) return;
-  const seconds = Math.floor((Date.now() - startTime) / 1000);
-  statusText.innerText = `Recording... ${seconds}s`;
-  setTimeout(updateTimer, 1000);
-}
+    - name: Sync Web Code to Android
+      run: npx cap sync android
+      
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+        
+    - name: Build APK
+      run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleDebug
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: "v${{ github.run_number }}"
+        name: "GameRec Build ${{ github.run_number }}"
+        files: android/app/build/outputs/apk/debug/app-debug.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
