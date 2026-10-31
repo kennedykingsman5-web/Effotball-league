@@ -25,7 +25,6 @@ jobs:
         npm init -y
         npm install --legacy-peer-deps @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
         npm install --legacy-peer-deps @capgo/capacitor-screen-recorder@6
-        npm install --legacy-peer-deps @capacitor/camera@6
         npm install --legacy-peer-deps @capacitor/filesystem@6
       
     - name: Create Web Folder
@@ -38,15 +37,24 @@ jobs:
     - name: Create Android Project
       run: npx cap add android
       
-    - name: Patch Android SDK
+    - name: Patch Android SDK and Permissions
       run: |
         sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' android/variables.gradle
         sed -i 's/targetSdkVersion = .*/targetSdkVersion = 35/g' android/variables.gradle
         sed -i 's/minSdkVersion = .*/minSdkVersion = 23/g' android/variables.gradle
         sed -i "s/classpath 'com.android.tools.build:gradle:.*'/classpath 'com.android.tools.build:gradle:8.6.0'/g" android/build.gradle
         sed -i 's/gradle-.*-all.zip/gradle-8.9-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
+        
         echo "allprojects { repositories { maven { url 'https://jitpack.io' } } }" >> android/build.gradle
-        sed -i 's/<application/<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" \/>\n<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" \/>\n<application/g' android/app/src/main/AndroidManifest.xml
+
+        # Force Add Permissions AND the MediaProjection Service
+        sed -i '/<application/i \
+        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> \
+        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> \
+        <uses-permission android:name="android.permission.RECORD_AUDIO" /> \
+        <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> \
+        <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" /> \
+        ' android/app/src/main/AndroidManifest.xml
 
     - name: Sync Web Code to Android
       run: npx cap sync android
