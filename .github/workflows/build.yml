@@ -25,9 +25,6 @@ jobs:
         npm init -y
         npm install --legacy-peer-deps @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
         npm install --legacy-peer-deps @capgo/capacitor-screen-recorder@6
-        npm install --legacy-peer-deps capacitor-floating-bubble@latest
-        npm install --legacy-peer-deps @capacitor/camera@6
-        npm install --legacy-peer-deps @capacitor/filesystem@6
         npm install --legacy-peer-deps @capacitor/assets
       
     - name: Create Web Folder
@@ -61,7 +58,6 @@ jobs:
         <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> \
         <uses-permission android:name="android.permission.RECORD_AUDIO" /> \
         <uses-permission android:name="android.permission.CAMERA" /> \
-        <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /> \
         <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> \
         <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" /> \
         ' android/app/src/main/AndroidManifest.xml
