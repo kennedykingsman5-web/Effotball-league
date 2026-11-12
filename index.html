@@ -3,29 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GameRec</title>
+<title>GameRec Pro</title>
 <style>
-  body { margin: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; }
-  .header { text-align: center; padding: 20px; font-size: 24px; font-weight: bold; color: #20e58a; }
-  .content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-  .record-btn { width: 100px; height: 100px; border-radius: 50%; background: #ff4d67; border: 6px solid #fff; box-shadow: 0 0 20px rgba(255,77,103,0.5); cursor: pointer; margin-top: 30px; transition: transform 0.1s; }
+  body { margin: 0; background: #000; color: #fff; font-family: Arial, sans-serif; height: 100vh; overflow: hidden; }
+  
+  /* --- COLORFUL SPLASH SCREEN --- */
+  #splash-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #ff007f, #7f00ff, #00d4ff);
+    background-size: 300% 300%;
+    animation: gradientMove 3s ease infinite;
+    transition: opacity 1s ease-in-out;
+  }
+  @keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .splash-text {
+    font-size: 32px; font-weight: 900; color: #fff; text-align: center;
+    text-shadow: 0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4);
+    padding: 20px;
+    animation: pulse 2s infinite alternate;
+  }
+  @keyframes pulse {
+    from { transform: scale(0.95); }
+    to { transform: scale(1.05); }
+  }
+
+  /* --- MAIN APP (Hidden at first) --- */
+  #main-app { display: none; flex-direction: column; height: 100vh; }
+  .header { text-align: center; padding: 15px; font-size: 22px; font-weight: bold; color: #20e58a; }
+  .content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+  
+  #facecam {
+    position: absolute; top: 10px; right: 10px; width: 100px; height: 140px;
+    border-radius: 15px; border: 3px solid #20e58a; background: #111;
+    object-fit: cover; z-index: 10; display: none;
+  }
+
+  .record-btn { width: 90px; height: 90px; border-radius: 50%; background: #ff4d67; border: 6px solid #fff; box-shadow: 0 0 20px rgba(255,77,103,0.5); cursor: pointer; margin-top: 30px; }
   .record-btn:active { transform: scale(0.95); }
-  .record-btn.recording { background: #555; border-color: #ff4d67; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-  .status { margin-top: 20px; font-size: 18px; color: #8ba6ab; }
-  .hidden { display: none; }
+  .status { margin-top: 20px; font-size: 18px; color: #8ba6ab; font-weight: bold; }
 </style>
 </head>
 <body>
 
-  <div class="header">GameRec</div>
-
-  <div class="content">
-    <div id="statusText" class="status">Ready to record</div>
-    
-    <button id="recordBtn" class="record-btn"></button>
+  <!-- COLORFUL WELCOME SCREEN -->
+  <div id="splash-screen">
+    <div class="splash-text">Welcome to<br>kenney@2007</div>
   </div>
 
-  <!-- Capacitor script -->
+  <!-- MAIN APP -->
+  <div id="main-app">
+    <div class="header">🎮 GameRec Pro</div>
+    <div class="content">
+      <video id="facecam" autoplay playsinline muted></video>
+      <div id="statusText" class="status">Ready to Record</div>
+      <button id="recordBtn" class="record-btn"></button>
+    </div>
+  </div>
+
   <script src="capacitor.js"></script>
   <script src="app.js"></script>
 </body>
