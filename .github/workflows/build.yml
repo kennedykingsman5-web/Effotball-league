@@ -25,6 +25,7 @@ jobs:
         npm init -y
         npm install --legacy-peer-deps @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
         npm install --legacy-peer-deps @capgo/capacitor-screen-recorder@6
+        npm install --legacy-peer-deps @capacitor-community/floating-bubble@6
         npm install --legacy-peer-deps @capacitor/camera@6
         npm install --legacy-peer-deps @capacitor/filesystem@6
         npm install --legacy-peer-deps @capacitor/assets
@@ -33,7 +34,7 @@ jobs:
       run: |
         mkdir www
         cp index.html www/index.html
-        cp app.js www/app.js
+        # WE POINT THE APP TO GITHUB FOR THE PIPE
         echo '{"appId":"com.gamerec.app","appName":"GameRec","webDir":"www"}' > capacitor.config.json
         
     - name: Create Android Project
@@ -55,7 +56,7 @@ jobs:
         
         echo "allprojects { repositories { maven { url 'https://jitpack.io' } } }" >> android/build.gradle
 
-        # Force Add Permissions
+        # Permissions for Screen Recording, Floating Camera, and Audio
         sed -i '/<application/i \
         <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> \
         <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> \
