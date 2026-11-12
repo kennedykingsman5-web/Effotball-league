@@ -119,12 +119,17 @@
           recordBtn.style.background = '#555';
           
           // Start recording with audio
-          await Capacitor.Plugins.ScreenRecorder.start({
-            notificationTitle: "GameRec Pro",
-            notificationText: "Recording your screen...",
-            recordAudio: true,
-            isAudio: true
-          });
+await Capacitor.Plugins.ScreenRecorder.start({
+  notificationTitle: "GameRec Pro",
+  notificationText: "Recording your screen...",
+  recordAudio: true, 
+  isAudio: true,
+  // THIS IS THE FIX FOR INTERNAL AUDIO
+  audioSource: "MIC_AND_INTERNAL", 
+  videoQuality: "1080p", // Makes the video full screen quality
+  videoBitrate: 5000000,
+  fps: 60
+});
 
           isRecording = true;
           startTime = Date.now();
