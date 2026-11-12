@@ -25,6 +25,8 @@ jobs:
         npm init -y
         npm install --legacy-peer-deps @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
         npm install --legacy-peer-deps @capgo/capacitor-screen-recorder@6
+        npm install --legacy-peer-deps @capacitor/camera@6
+        npm install --legacy-peer-deps @capacitor/filesystem@6
         npm install --legacy-peer-deps @capacitor/assets
       
     - name: Create Web Folder
@@ -43,7 +45,7 @@ jobs:
         cp image_341a8827.jpg resources/icon.jpg
         npx capacitor-assets generate --android
       
-    - name: Patch Android SDK, Fullscreen, and Permissions
+    - name: Patch Android SDK and Permissions
       run: |
         sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' android/variables.gradle
         sed -i 's/targetSdkVersion = .*/targetSdkVersion = 35/g' android/variables.gradle
@@ -51,82 +53,15 @@ jobs:
         sed -i "s/classpath 'com.android.tools.build:gradle:.*'/classpath 'com.android.tools.build:gradle:8.6.0'/g" android/build.gradle
         sed -i 's/gradle-.*-all.zip/gradle-8.9-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
         
-        # Force Fullscreen Theme
-        sed -i 's/android:theme="@style\/AppTheme.NoActionBar"/android:theme="@android:style\/Theme.NoTitleBar.Fullscreen"/g' android/app/src/main/AndroidManifest.xml
-        
-        # Add Permissions (Audio, Camera, Overlay)
+        # Adding permissions WITHOUT the broken Java code
         sed -i '/<application/i \
         <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> \
         <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> \
         <uses-permission android:name="android.permission.RECORD_AUDIO" /> \
         <uses-permission android:name="android.permission.CAMERA" /> \
-        <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /> \
         <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> \
         <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" /> \
         ' android/app/src/main/AndroidManifest.xml
-
-        # Inject Native Floating Camera Service
-        mkdir -p android/app/src/main/java/com/gamerec/app
-        cat << 'EOF' > android/app/src/main/java/com/gamerec/app/FloatingCameraService.java
-        package com.gamerec.app;
-        import android.app.Service;
-        import android.content.Intent;
-        import android.graphics.PixelFormat;
-        import android.hardware.Camera;
-        import android.os.IBinder;
-        import android.view.Gravity;
-        import android.view.SurfaceHolder;
-        import android.view.SurfaceView;
-        import android.view.WindowManager;
-
-        public class FloatingCameraService extends Service {
-            private WindowManager windowManager;
-            private SurfaceView surfaceView;
-            private Camera camera;
-
-            @Override
-            public IBinder onBind(Intent intent) { return null; }
-
-            @Override
-            public void onCreate() {
-                super.onCreate();
-                windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-                surfaceView = new SurfaceView(this);
-                int LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-                WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                    300, 400, LAYOUT_FLAG, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
-                params.gravity = Gravity.TOP | Gravity.END;
-                params.x = 20;
-                params.y = 100;
-                windowManager.addView(surfaceView, params);
-
-                surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
-                    @Override
-                    public void surfaceCreated(SurfaceHolder holder) {
-                        try {
-                            camera = Camera.open(1);
-                            camera.setPreviewDisplay(holder);
-                            camera.startPreview();
-                        } catch (Exception e) { e.printStackTrace(); }
-                    }
-                    @Override
-                    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
-                    @Override
-                    public void surfaceDestroyed(SurfaceHolder holder) {}
-                });
-            }
-
-            @Override
-            public void onDestroy() {
-                super.onDestroy();
-                if (camera != null) { camera.stopPreview(); camera.release(); }
-                if (surfaceView != null) { windowManager.removeView(surfaceView); }
-            }
-        }
-        EOF
-
-        # Inject Floating Camera Service into Manifest
-        sed -i 's/<\/application>/<service android:name=".FloatingCameraService" android:exported="false" \/><\/application>/g' android/app/src/main/AndroidManifest.xml
 
     - name: Sync Web Code to Android
       run: npx cap sync android
