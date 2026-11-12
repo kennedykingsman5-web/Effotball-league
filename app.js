@@ -114,4 +114,4 @@ function updateTimer() {
   const seconds = Math.floor((Date.now() - startTime) / 1000);
   statusText.innerText = `🔴 Recording... ${seconds}s`;
   setTimeout(updateTimer, 1000);
-}
+        }
