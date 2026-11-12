@@ -25,7 +25,6 @@ jobs:
         npm init -y
         npm install --legacy-peer-deps @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
         npm install --legacy-peer-deps @capgo/capacitor-screen-recorder@6
-        # THE FIX: Corrected package name for the floating bubble
         npm install --legacy-peer-deps capacitor-floating-bubble@latest
         npm install --legacy-peer-deps @capacitor/camera@6
         npm install --legacy-peer-deps @capacitor/filesystem@6
@@ -35,6 +34,7 @@ jobs:
       run: |
         mkdir www
         cp index.html www/index.html
+        cp image_341a8827.jpg www/image_341a8827.jpg
         echo '{"appId":"com.gamerec.app","appName":"GameRec","webDir":"www"}' > capacitor.config.json
         
     - name: Create Android Project
