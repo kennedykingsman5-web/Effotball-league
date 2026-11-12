@@ -34,9 +34,7 @@
 
   .record-btn { width: 90px; height: 90px; border-radius: 50%; background: #ff4d67; border: 6px solid #fff; box-shadow: 0 0 20px rgba(255,77,103,0.5); cursor: pointer; margin-top: 30px; }
   .record-btn:active { transform: scale(0.95); }
-  .status { margin-top: 20px; font-size: 18px; color: #8ba6ab; font-weight: bold; }
-
-  .reaction-btn { margin-top: 40px; padding: 15px 30px; border-radius: 12px; background: #20e58a; color: #000; font-weight: 900; border: none; font-size: 18px; display: none; }
+  .status { margin-top: 20px; font-size: 18px; color: #8ba6ab; font-weight: bold; text-align: center; padding: 0 20px; }
 </style>
 </head>
 <body>
@@ -49,9 +47,8 @@
     <div class="header"><span>🎮 GameRec Pro</span></div>
     <div class="content">
       <video id="facecam" autoplay playsinline muted></video>
-      <div id="statusText" class="status">Ready to Record</div>
+      <div id="statusText" class="status">Tap the button to record your face.</div>
       <button id="recordBtn" class="record-btn"></button>
-      <button id="reactionBtn" class="reaction-btn">🎥 Record Face Reaction</button>
     </div>
   </div>
 
@@ -69,87 +66,61 @@
     // 2. CAMERA
     async function startCamera() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
         const videoElement = document.getElementById('facecam');
         videoElement.srcObject = stream;
         videoElement.style.display = 'block';
-      } catch (e) {}
+      } catch (e) {
+        alert("Camera permission needed!");
+      }
     }
 
-    // 3. RECORDING LOGIC (NEW PLUGIN)
+    // 3. FACE RECORDING LOGIC
     let isRecording = false;
-    let startTime;
+    let mediaRecorder;
+    let recordedChunks = [];
     const recordBtn = document.getElementById('recordBtn');
     const statusText = document.getElementById('statusText');
-    const reactionBtn = document.getElementById('reactionBtn');
 
     recordBtn.addEventListener('click', async () => {
       if (!isRecording) {
         try {
-          statusText.innerText = "Starting...";
+          statusText.innerText = "Starting Facecam...";
           recordBtn.style.background = '#555';
           
-          await Capacitor.Plugins.ScreenRecorder.start({
-            notificationTitle: "GameRec Pro",
-            notificationText: "Recording your screen...",
-            recordAudio: true,
-            isAudio: true
-          });
-
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          recordedChunks = [];
+          
+          mediaRecorder.ondataavailable = e => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+          };
+          
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'my_face_reaction.webm';
+            a.click();
+            statusText.innerText = "Facecam Saved to Downloads!";
+            recordBtn.style.background = '#ff4d67';
+            alert("Face video saved to your phone!");
+          };
+          
+          mediaRecorder.start();
           isRecording = true;
-          startTime = Date.now();
-          updateTimer();
+          statusText.innerText = "🔴 Recording your face...";
           
         } catch (e) {
           alert("Error: " + e.message);
-          statusText.innerText = "Ready to Record";
+          statusText.innerText = "Tap the button to record your face.";
           recordBtn.style.background = '#ff4d67';
         }
       } else {
-        try {
-          statusText.innerText = "Saving...";
-          await Capacitor.Plugins.ScreenRecorder.stop();
-          
-          isRecording = false;
-          statusText.innerText = "Saved! Tap Reaction to record face.";
-          recordBtn.style.background = '#ff4d67';
-          
-          reactionBtn.style.display = 'block';
-          alert("Game video saved!");
-          
-        } catch (e) {
-          alert("Stop Error: " + e.message);
-        }
+        mediaRecorder.stop();
+        isRecording = false;
       }
-    });
-
-    function updateTimer() {
-      if (!isRecording) return;
-      const seconds = Math.floor((Date.now() - startTime) / 1000);
-      statusText.innerText = `🔴 Recording... ${seconds}s`;
-      setTimeout(updateTimer, 1000);
-    }
-
-    // 4. REACTION CAMERA (Records your face to the gallery)
-    reactionBtn.addEventListener('click', async () => {
-        alert("Face Reaction recording started! (This uses the front camera and saves to gallery)");
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
-            const mediaRecorder = new MediaRecorder(stream);
-            const chunks = [];
-            mediaRecorder.ondataavailable = e => chunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(chunks, { type: 'video/webm' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'face_reaction.webm';
-                a.click();
-                alert("Face reaction saved to downloads!");
-            };
-            mediaRecorder.start();
-            setTimeout(() => { mediaRecorder.stop(); stream.getTracks().forEach(t=>t.stop()); }, 10000);
-        } catch(e) { alert("Camera error: " + e.message); }
     });
   </script>
 </body>
