@@ -63,15 +63,16 @@
       }, 1000);
     }, 3000);
 
-    // 2. CAMERA
+    // 2. CAMERA (The permission fix)
     async function startCamera() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+        // This explicitly asks Android for Camera and Mic permission
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         const videoElement = document.getElementById('facecam');
         videoElement.srcObject = stream;
         videoElement.style.display = 'block';
       } catch (e) {
-        alert("Camera permission needed!");
+        console.log("Permission denied, waiting for user to tap button.");
       }
     }
 
@@ -88,7 +89,8 @@
           statusText.innerText = "Starting Facecam...";
           recordBtn.style.background = '#555';
           
-          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+          // This time it asks for permission again when you tap
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
           mediaRecorder = new MediaRecorder(stream);
           recordedChunks = [];
           
@@ -113,8 +115,8 @@
           statusText.innerText = "🔴 Recording your face...";
           
         } catch (e) {
-          alert("Error: " + e.message);
-          statusText.innerText = "Tap the button to record your face.";
+          alert("Error: " + e.message + "\n\nPlease go to your phone Settings > Apps > GameRec Pro > Permissions and allow Camera and Microphone.");
+          statusText.innerText = "Permission Denied. Check Settings.";
           recordBtn.style.background = '#ff4d67';
         }
       } else {
