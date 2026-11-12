@@ -1,7 +1,5 @@
 const recordBtn = document.getElementById('recordBtn');
 const statusText = document.getElementById('statusText');
-const splashScreen = document.getElementById('splash-screen');
-const mainApp = document.getElementById('main-app');
 const settingsModal = document.getElementById('settings-modal');
 
 let isRecording = false;
@@ -17,20 +15,6 @@ toggleFacecam.checked = localStorage.getItem('setting_facecam') !== 'false';
 toggleAudio.checked = localStorage.getItem('setting_audio') !== 'false';
 toggleSplash.checked = localStorage.getItem('setting_splash') !== 'false';
 
-// SPLASH SCREEN
-if (toggleSplash.checked) {
-  setTimeout(() => {
-    splashScreen.style.opacity = '0';
-    setTimeout(() => {
-      splashScreen.style.display = 'none';
-      mainApp.style.display = 'flex';
-    }, 1000);
-  }, 3000);
-} else {
-  splashScreen.style.display = 'none';
-  mainApp.style.display = 'flex';
-}
-
 // SETTINGS MENU
 document.getElementById('open-settings-btn').addEventListener('click', () => settingsModal.style.display = 'flex');
 document.getElementById('close-settings-btn').addEventListener('click', () => settingsModal.style.display = 'none');
@@ -45,7 +29,6 @@ recordBtn.addEventListener('click', async () => {
     try {
       statusText.innerText = "Starting...";
       
-      // 1. Start Screen Recording with Audio
       await Capacitor.Plugins.ScreenRecorder.start({
         notificationTitle: "GameRec Pro",
         notificationText: "Recording screen and audio...",
@@ -53,13 +36,12 @@ recordBtn.addEventListener('click', async () => {
         isAudio: toggleAudio.checked
       });
       
-      // 2. Start Floating Facecam
+      // Floating Facecam logic
       if (toggleFacecam.checked && Capacitor.Plugins.FloatingBubble) {
         await Capacitor.Plugins.FloatingBubble.show({
           title: "GameRec Cam",
-          description: "Your facecam is active"
+          description: "Facecam active"
         });
-        // Note: In a real scenario, we'd initialize the camera preview inside this bubble via native code.
       }
 
       isRecording = true;
