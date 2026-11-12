@@ -5,75 +5,158 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>GameRec Pro</title>
 <style>
-  body { margin: 0; background: #000; color: #fff; font-family: Arial, sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .record-btn { width: 90px; height: 90px; border-radius: 50%; background: #ff4d67; border: 6px solid #fff; box-shadow: 0 0 20px rgba(255,77,103,0.5); cursor: pointer; margin-top: 20px; }
-  .status { margin-top: 20px; font-size: 20px; color: #8ba6ab; font-weight: bold; }
+  body { margin: 0; background: #000; color: #fff; font-family: Arial, sans-serif; height: 100vh; overflow: hidden; }
+  
+  /* SPLASH SCREEN */
+  #splash-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: url('image_341a8827.jpg') center/cover no-repeat;
+    transition: opacity 1s ease-in-out;
+  }
+  #splash-screen::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+  .splash-text {
+    font-size: 32px; font-weight: 900; color: #fff; text-align: center;
+    text-shadow: 0 0 20px #ff007f, 0 0 40px #00d4ff;
+    padding: 20px; animation: pulse 2s infinite alternate; position: relative; z-index: 2;
+  }
+  @keyframes pulse { from { transform: scale(0.95); } to { transform: scale(1.05); } }
+
+  /* MAIN APP */
+  #main-app { display: none; flex-direction: column; height: 100vh; }
+  .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; font-size: 20px; font-weight: bold; color: #20e58a; border-bottom: 1px solid #222; }
+  .settings-btn { background: #222; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; font-size: 16px; font-weight: bold; }
+  
+  .content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+  
+  /* FACECAM BUBBLE */
+  #facecam {
+    position: absolute; top: 10px; right: 10px; width: 100px; height: 140px;
+    border-radius: 15px; border: 3px solid #20e58a; background: #111;
+    object-fit: cover; z-index: 10; display: none;
+  }
+
+  .record-btn { width: 90px; height: 90px; border-radius: 50%; background: #ff4d67; border: 6px solid #fff; box-shadow: 0 0 20px rgba(255,77,103,0.5); cursor: pointer; margin-top: 30px; }
+  .record-btn:active { transform: scale(0.95); }
+  .status { margin-top: 20px; font-size: 18px; color: #8ba6ab; font-weight: bold; }
+
+  /* SETTINGS MENU */
+  #settings-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: none; flex-direction: column; padding: 20px; box-sizing: border-box; }
+  .settings-header { display: flex; justify-content: space-between; align-items: center; font-size: 22px; color: #20e58a; margin-bottom: 20px; }
+  .close-settings { background: #333; color: #fff; border: none; padding: 10px 15px; border-radius: 8px; font-size: 16px; }
+  .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #333; font-size: 18px; }
 </style>
 </head>
 <body>
 
-  <h2>🎮 GameRec Pro</h2>
-  <div id="statusText" class="status">Tap to record</div>
-  <button id="recordBtn" class="record-btn"></button>
+  <div id="splash-screen">
+    <div class="splash-text">Welcome to<br>kenney@2007</div>
+  </div>
+
+  <div id="settings-modal">
+    <div class="settings-header">
+      <span>⚙️ Settings</span>
+      <button class="close-settings" id="close-settings-btn">Close</button>
+    </div>
+    <div class="setting-item"><span>Show Facecam (While in app)</span><input type="checkbox" id="toggle-facecam" checked></div>
+    <div class="setting-item"><span>Record Audio & Mic</span><input type="checkbox" id="toggle-audio" checked></div>
+  </div>
+
+  <div id="main-app">
+    <div class="header">
+      <span>🎮 GameRec Pro</span>
+      <button class="settings-btn" id="open-settings-btn">⚙️ Settings</button>
+    </div>
+    <div class="content">
+      <video id="facecam" autoplay playsinline muted></video>
+      <div id="statusText" class="status">Ready to Record</div>
+      <button id="recordBtn" class="record-btn"></button>
+    </div>
+  </div>
 
   <script>
-    const recordBtn = document.getElementById('recordBtn');
-    const statusText = document.getElementById('statusText');
-    let isRecording = false;
+    // 1. SPLASH SCREEN
+    setTimeout(() => {
+      document.getElementById('splash-screen').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('splash-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        startCamera();
+      }, 1000);
+    }, 3000);
 
-    // Request Overlay Permission automatically on load
-    async function requestOverlayPermission() {
-      if (window.Android && window.Android.requestOverlayPermission) {
-        window.Android.requestOverlayPermission();
+    // 2. CAMERA LOGIC (Fixed permissions)
+    async function startCamera() {
+      try {
+        // We only ask for video here. Audio is handled by the recorder.
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        const videoElement = document.getElementById('facecam');
+        videoElement.srcObject = stream;
+        videoElement.style.display = 'block';
+      } catch (e) {
+        console.log("Camera permission denied or unavailable.");
       }
     }
-    setTimeout(requestOverlayPermission, 1000);
+
+    // 3. SETTINGS MENU
+    document.getElementById('open-settings-btn').addEventListener('click', () => {
+      document.getElementById('settings-modal').style.display = 'flex';
+    });
+    document.getElementById('close-settings-btn').addEventListener('click', () => {
+      document.getElementById('settings-modal').style.display = 'none';
+    });
+
+    // 4. RECORDING LOGIC
+    let isRecording = false;
+    let startTime;
+    const recordBtn = document.getElementById('recordBtn');
+    const statusText = document.getElementById('statusText');
 
     recordBtn.addEventListener('click', async () => {
       if (!isRecording) {
         try {
-          statusText.innerText = "Requesting Mic/Camera...";
+          statusText.innerText = "Starting...";
+          recordBtn.style.background = '#555';
           
-          // 1. Force Microphone and Camera Permissions
-          await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-          
-          statusText.innerText = "Starting Recorder...";
-          
-          // 2. Start Screen Recording with Audio
+          // Start recording with audio
           await Capacitor.Plugins.ScreenRecorder.start({
-            notificationTitle: "GameRec Pro is Recording",
-            notificationText: "Tap to return to app and stop.",
+            notificationTitle: "GameRec Pro",
+            notificationText: "Recording your screen...",
             recordAudio: true,
             isAudio: true
           });
 
-          // 3. Start the Native Floating Camera (The Facecam over the game!)
-          if (window.Android && window.Android.startFloatingCamera) {
-            window.Android.startFloatingCamera();
-          }
-
           isRecording = true;
-          statusText.innerText = "🔴 Recording! Minimize and play your game.";
-          recordBtn.style.background = '#555';
+          startTime = Date.now();
+          updateTimer();
           
         } catch (e) {
-          alert("Failed to start: " + e.message);
-          statusText.innerText = "Error: Check permissions.";
+          alert("Error: " + e.message);
+          statusText.innerText = "Ready to Record";
+          recordBtn.style.background = '#ff4d67';
         }
       } else {
-        statusText.innerText = "Saving...";
-        await Capacitor.Plugins.ScreenRecorder.stop();
-        
-        if (window.Android && window.Android.stopFloatingCamera) {
-          window.Android.stopFloatingCamera();
+        try {
+          statusText.innerText = "Saving...";
+          await Capacitor.Plugins.ScreenRecorder.stop();
+          
+          isRecording = false;
+          statusText.innerText = "Saved to Gallery!";
+          recordBtn.style.background = '#ff4d67';
+          alert("Video saved! Check your gallery.");
+          
+        } catch (e) {
+          alert("Stop Error: " + e.message);
         }
-        
-        isRecording = false;
-        statusText.innerText = "Saved to Gallery!";
-        recordBtn.style.background = '#ff4d67';
-        alert("Video with Audio + Facecam saved!");
       }
     });
+
+    function updateTimer() {
+      if (!isRecording) return;
+      const seconds = Math.floor((Date.now() - startTime) / 1000);
+      statusText.innerText = `🔴 Recording... ${seconds}s`;
+      setTimeout(updateTimer, 1000);
+    }
   </script>
 </body>
 </html>
