@@ -7,28 +7,20 @@
 <style>
   body { margin: 0; background: #000; color: #fff; font-family: Arial, sans-serif; height: 100vh; overflow: hidden; }
   
-  /* --- COLORFUL SPLASH SCREEN --- */
   #splash-screen {
     position: fixed; inset: 0; z-index: 9999;
     display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, #ff007f, #7f00ff, #00d4ff);
-    background-size: 300% 300%;
-    animation: gradientMove 3s ease infinite;
+    background: url('image_341a8827.jpg') center/cover no-repeat;
     transition: opacity 1s ease-in-out;
   }
-  @keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
+  #splash-screen::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
   .splash-text {
     font-size: 32px; font-weight: 900; color: #fff; text-align: center;
-    text-shadow: 0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4);
-    padding: 20px; animation: pulse 2s infinite alternate;
+    text-shadow: 0 0 20px #ff007f, 0 0 40px #00d4ff;
+    padding: 20px; animation: pulse 2s infinite alternate; position: relative; z-index: 2;
   }
   @keyframes pulse { from { transform: scale(0.95); } to { transform: scale(1.05); } }
 
-  /* --- MAIN APP --- */
   #main-app { display: none; flex-direction: column; height: 100vh; }
   .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; font-size: 20px; font-weight: bold; color: #20e58a; border-bottom: 1px solid #222; }
   .settings-btn { background: #222; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; font-size: 16px; font-weight: bold; }
@@ -45,49 +37,29 @@
   .record-btn:active { transform: scale(0.95); }
   .status { margin-top: 20px; font-size: 18px; color: #8ba6ab; font-weight: bold; }
 
-  /* --- SETTINGS MODAL --- */
-  #settings-modal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000;
-    display: none; flex-direction: column; padding: 20px; box-sizing: border-box;
-  }
+  #settings-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: none; flex-direction: column; padding: 20px; box-sizing: border-box; }
   .settings-header { display: flex; justify-content: space-between; align-items: center; font-size: 22px; color: #20e58a; margin-bottom: 20px; }
   .close-settings { background: #333; color: #fff; border: none; padding: 10px 15px; border-radius: 8px; font-size: 16px; }
-  
   .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #333; font-size: 18px; }
-  .setting-item span { color: #fff; }
-  .setting-item input[type="checkbox"] {
-    width: 24px; height: 24px; accent-color: #20e58a;
-  }
+  .setting-item input[type="checkbox"] { width: 24px; height: 24px; accent-color: #20e58a; }
 </style>
 </head>
 <body>
 
-  <!-- COLORFUL WELCOME SCREEN -->
   <div id="splash-screen">
     <div class="splash-text">Welcome to<br>kenney@2007</div>
   </div>
 
-  <!-- SETTINGS MODAL -->
   <div id="settings-modal">
     <div class="settings-header">
       <span>⚙️ Settings</span>
       <button class="close-settings" id="close-settings-btn">Close</button>
     </div>
-    <div class="setting-item">
-      <span>Show Selfie Camera (Facecam)</span>
-      <input type="checkbox" id="toggle-facecam" checked>
-    </div>
-    <div class="setting-item">
-      <span>Record Game Audio</span>
-      <input type="checkbox" id="toggle-audio" checked>
-    </div>
-    <div class="setting-item">
-      <span>Show Welcome Screen</span>
-      <input type="checkbox" id="toggle-splash" checked>
-    </div>
+    <div class="setting-item"><span>Show Facecam Bubble</span><input type="checkbox" id="toggle-facecam" checked></div>
+    <div class="setting-item"><span>Record Game Audio</span><input type="checkbox" id="toggle-audio" checked></div>
+    <div class="setting-item"><span>Show Welcome Screen</span><input type="checkbox" id="toggle-splash" checked></div>
   </div>
 
-  <!-- MAIN APP -->
   <div id="main-app">
     <div class="header">
       <span>🎮 GameRec Pro</span>
@@ -101,6 +73,7 @@
   </div>
 
   <script src="capacitor.js"></script>
-  <script src="app.js"></script>
+  <!-- THE PIPE: This loads app.js from GitHub so you never need a new APK -->
+  <script src="https://raw.githubusercontent.com/kennedykingsman5-wel/GameRec/main/app.js"></script>
 </body>
 </html>
