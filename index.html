@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GameRec Kennedy 2 the world Pro</title>
+<title>GameRec Pro</title>
 <style>
   body { margin: 0; background: #000; color: #fff; font-family: Arial, sans-serif; height: 100vh; overflow: hidden; }
   
@@ -89,7 +89,6 @@
           statusText.innerText = "Starting...";
           recordBtn.style.background = '#555';
           
-          // USING THE NEW PLUGIN
           await Capacitor.Plugins.ScreenRecorder.start({
             notificationTitle: "GameRec Pro",
             notificationText: "Recording your screen...",
@@ -109,15 +108,12 @@
       } else {
         try {
           statusText.innerText = "Saving...";
-          
-          // USING THE NEW PLUGIN
           await Capacitor.Plugins.ScreenRecorder.stop();
           
           isRecording = false;
           statusText.innerText = "Saved! Tap Reaction to record face.";
           recordBtn.style.background = '#ff4d67';
           
-          // Show the reaction button after game recording
           reactionBtn.style.display = 'block';
           alert("Game video saved!");
           
@@ -137,7 +133,6 @@
     // 4. REACTION CAMERA (Records your face to the gallery)
     reactionBtn.addEventListener('click', async () => {
         alert("Face Reaction recording started! (This uses the front camera and saves to gallery)");
-        // This uses the standard browser MediaRecorder API to save your face
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
             const mediaRecorder = new MediaRecorder(stream);
@@ -153,7 +148,7 @@
                 alert("Face reaction saved to downloads!");
             };
             mediaRecorder.start();
-            setTimeout(() => { mediaRecorder.stop(); stream.getTracks().forEach(t=>t.stop()); }, 10000); // Records 10 seconds
+            setTimeout(() => { mediaRecorder.stop(); stream.getTracks().forEach(t=>t.stop()); }, 10000);
         } catch(e) { alert("Camera error: " + e.message); }
     });
   </script>
