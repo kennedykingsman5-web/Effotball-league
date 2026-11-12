@@ -24,7 +24,8 @@ jobs:
       run: |
         npm init -y
         npm install --legacy-peer-deps @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
-        npm install --legacy-peer-deps @capgo/capacitor-screen-recorder@6
+        # THE NEW POWERFUL PLUGIN
+        npm install --legacy-peer-deps capacitor-screen-recorder@latest
         npm install --legacy-peer-deps @capacitor/camera@6
         npm install --legacy-peer-deps @capacitor/filesystem@6
         npm install --legacy-peer-deps @capacitor/assets
@@ -53,7 +54,9 @@ jobs:
         sed -i "s/classpath 'com.android.tools.build:gradle:.*'/classpath 'com.android.tools.build:gradle:8.6.0'/g" android/build.gradle
         sed -i 's/gradle-.*-all.zip/gradle-8.9-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
         
-        # Add permissions for Audio, Camera, and Overlay (NO CAPTURE_AUDIO_OUTPUT)
+        echo "allprojects { repositories { maven { url 'https://jitpack.io' } } }" >> android/build.gradle
+
+        # Force Add Permissions for Audio, Camera, and Overlay
         sed -i '/<application/i \
         <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> \
         <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> \
