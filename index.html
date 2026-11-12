@@ -10,7 +10,6 @@
   #splash-screen {
     position: fixed; inset: 0; z-index: 9999;
     display: flex; align-items: center; justify-content: center;
-    /* THE IMAGE PATH IS FIXED HERE */
     background: url('image_341a8827.jpg') center/cover no-repeat;
     transition: opacity 1s ease-in-out;
   }
@@ -73,8 +72,8 @@
     </div>
   </div>
 
-  <!-- GUARANTEED SPLASH SCREEN TIMER -->
   <script>
+    // Hardcoded timer for splash screen
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
       if (splash) splash.style.opacity = '0';
@@ -86,7 +85,7 @@
   </script>
 
   <script src="capacitor.js"></script>
-  <!-- PIPE: Loads app.js from GitHub -->
-  <script src="https://raw.githubusercontent.com/kennedykingsman5-wel/GameRec/main/app.js"></script>
+  <!-- THE FIXED PIPE: Using jsDelivr CDN so Android doesn't block it -->
+  <script src="https://cdn.jsdelivr.net/gh/kennedykingsman5-wel/GameRec@main/app.js"></script>
 </body>
 </html>
