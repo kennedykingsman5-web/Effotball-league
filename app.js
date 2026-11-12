@@ -1,29 +1,65 @@
+alert("App.js successfully loaded!");
+
 const recordBtn = document.getElementById('recordBtn');
 const statusText = document.getElementById('statusText');
+const facecam = document.getElementById('facecam');
 const settingsModal = document.getElementById('settings-modal');
 
 let isRecording = false;
 let startTime;
+let cameraStream = null;
 
 // SETTINGS
 const toggleFacecam = document.getElementById('toggle-facecam');
 const toggleAudio = document.getElementById('toggle-audio');
 const toggleSplash = document.getElementById('toggle-splash');
 
-// LOAD SETTINGS
 toggleFacecam.checked = localStorage.getItem('setting_facecam') !== 'false';
 toggleAudio.checked = localStorage.getItem('setting_audio') !== 'false';
 toggleSplash.checked = localStorage.getItem('setting_splash') !== 'false';
 
-// SETTINGS MENU
-document.getElementById('open-settings-btn').addEventListener('click', () => settingsModal.style.display = 'flex');
-document.getElementById('close-settings-btn').addEventListener('click', () => settingsModal.style.display = 'none');
+// MENU
+document.getElementById('open-settings-btn').addEventListener('click', () => {
+  settingsModal.style.display = 'flex';
+});
+document.getElementById('close-settings-btn').addEventListener('click', () => {
+  settingsModal.style.display = 'none';
+});
 
-toggleFacecam.addEventListener('change', () => localStorage.setItem('setting_facecam', toggleFacecam.checked));
+toggleFacecam.addEventListener('change', () => {
+  localStorage.setItem('setting_facecam', toggleFacecam.checked);
+  if (toggleFacecam.checked) startFacecam();
+  else stopFacecam();
+});
 toggleAudio.addEventListener('change', () => localStorage.setItem('setting_audio', toggleAudio.checked));
 toggleSplash.addEventListener('change', () => localStorage.setItem('setting_splash', toggleSplash.checked));
 
-// RECORDING LOGIC
+// CAMERA
+async function startFacecam() {
+  if (cameraStream) return;
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    facecam.srcObject = cameraStream;
+    facecam.style.display = 'block';
+  } catch (e) {
+    alert("Camera Error: " + e.message);
+  }
+}
+function stopFacecam() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+    facecam.srcObject = null;
+    facecam.style.display = 'none';
+  }
+}
+
+// Start camera after splash screen
+setTimeout(() => {
+  if (toggleFacecam.checked) startFacecam();
+}, 4000);
+
+// RECORDING
 recordBtn.addEventListener('click', async () => {
   if (!isRecording) {
     try {
@@ -36,7 +72,6 @@ recordBtn.addEventListener('click', async () => {
         isAudio: toggleAudio.checked
       });
       
-      // Floating Facecam logic
       if (toggleFacecam.checked && Capacitor.Plugins.FloatingBubble) {
         await Capacitor.Plugins.FloatingBubble.show({
           title: "GameRec Cam",
@@ -50,8 +85,8 @@ recordBtn.addEventListener('click', async () => {
       updateTimer();
       
     } catch (e) {
-      statusText.innerText = "Error: " + e.message;
-      alert("Error: " + e.message);
+      alert("Recorder Error: " + e.message);
+      statusText.innerText = "Error";
     }
   } else {
     try {
@@ -69,7 +104,7 @@ recordBtn.addEventListener('click', async () => {
       alert("Video and Audio saved!");
       
     } catch (e) {
-      statusText.innerText = "Error: " + e.message;
+      alert("Stop Error: " + e.message);
     }
   }
 });
