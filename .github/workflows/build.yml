@@ -53,7 +53,7 @@ jobs:
         sed -i "s/classpath 'com.android.tools.build:gradle:.*'/classpath 'com.android.tools.build:gradle:8.6.0'/g" android/build.gradle
         sed -i 's/gradle-.*-all.zip/gradle-8.9-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
         
-        # Adding permissions WITHOUT the broken Java code
+        # Force Add Permissions for Audio, Camera, and Overlay
         sed -i '/<application/i \
         <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> \
         <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> \
@@ -61,6 +61,7 @@ jobs:
         <uses-permission android:name="android.permission.CAMERA" /> \
         <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> \
         <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" /> \
+        <uses-permission android:name="android.permission.CAPTURE_AUDIO_OUTPUT" tools:ignore="ProtectedPermissions" /> \
         ' android/app/src/main/AndroidManifest.xml
 
     - name: Sync Web Code to Android
