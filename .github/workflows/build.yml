@@ -36,14 +36,14 @@ jobs:
         cp app.js www/app.js
         echo '{"appId":"com.gamerec.app","appName":"GameRec","webDir":"www"}' > capacitor.config.json
         
+    - name: Create Android Project
+      run: npx cap add android
+      
     - name: Generate App Icon
       run: |
         mkdir -p resources
-        cp image_341a8827.jpg resources/icon.png
+        cp image_341a8827.jpg resources/icon.jpg
         npx capacitor-assets generate --android
-        
-    - name: Create Android Project
-      run: npx cap add android
       
     - name: Patch Android SDK and Permissions
       run: |
@@ -55,7 +55,7 @@ jobs:
         
         echo "allprojects { repositories { maven { url 'https://jitpack.io' } } }" >> android/build.gradle
 
-        # Force Add Permissions for Audio, Camera, Overlay, and Storage
+        # Force Add Permissions
         sed -i '/<application/i \
         <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> \
         <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> \
