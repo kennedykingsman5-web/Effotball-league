@@ -97,33 +97,40 @@
   <script src="capacitor.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // 1. FAILSAFE: Forces the app to leave the splash screen no matter what
+    setTimeout(() => {
+      const splash = document.getElementById('splash');
+      const login = document.getElementById('loginScreen');
+      if (splash) splash.classList.remove('active');
+      if (login) login.classList.add('active');
+    }, 3000);
+
+    // 2. CONFIGURATION
     const SUPABASE_URL = "https://iosbnzxehkvmfwkdwgxp.supabase.co";
     const SUPABASE_KEY = "sb_publishable_MWKrB8KqnKXkgVDeDxMyPA_1rBSdpgz";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const AI_ENDPOINT = SUPABASE_URL + "/functions/v1/swift-worker";
 
-    // SAFE STARTUP
+    // 3. BACKGROUND CHECK (If they are already logged in, skip login)
     setTimeout(async () => {
-      document.getElementById('splash').classList.remove('active');
-      
       try {
         const { data } = await supabase.auth.getSession();
         if (data && data.session) {
           showDashboard();
-        } else {
-          document.getElementById('loginScreen').classList.add('active');
         }
       } catch (e) {
-        document.getElementById('loginScreen').classList.add('active');
+        console.log("Not logged in");
       }
-    }, 2000);
+    }, 3500);
 
     function showDashboard() {
       document.getElementById('loginScreen').classList.remove('active');
+      document.getElementById('splash').classList.remove('active');
       document.getElementById('dashboardScreen').classList.add('active');
       loadLeagueTable();
     }
 
+    // 4. AUTHENTICATION
     let isSignUp = false;
     document.getElementById('switchAuth').addEventListener('click', () => {
       isSignUp = !isSignUp;
@@ -159,6 +166,7 @@
       location.reload();
     });
 
+    // 5. LEAGUE TABLE
     async function loadLeagueTable() {
       const tbody = document.getElementById('tableBody');
       const { data, error } = await supabase.from('teams').select('*').order('points', { ascending: false });
@@ -184,6 +192,7 @@
       `).join('');
     }
 
+    // 6. AI RESULT PROCESSING
     document.getElementById('processAiBtn').addEventListener('click', async () => {
       const text = document.getElementById('aiInput').value;
       if (!text) return alert("Paste a result first");
@@ -213,6 +222,7 @@
       }
     });
 
+    // 7. WHATSAPP SHARE
     document.getElementById('shareBtn').addEventListener('click', async () => {
       try {
         if (window.Capacitor && window.Capacitor.Plugins.Share) {
@@ -224,7 +234,7 @@
           });
         }
       } catch (e) {
-        alert("Share failed.");
+        alert("Share failed. WhatsApp not installed?");
       }
     });
   </script>
