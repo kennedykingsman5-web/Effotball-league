@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Effotball League</title>
+<style>
+  body { margin: 0; background: #0a0a0a; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  .screen { display: none; flex-direction: column; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+  .screen.active { display: flex; }
+  
+  /* Login Screen */
+  .logo { font-size: 40px; font-weight: 900; text-align: center; color: #20e58a; margin-top: 50px; text-shadow: 0 0 20px rgba(32,229,138,0.5); }
+  .subtitle { text-align: center; color: #888; margin-bottom: 40px; }
+  .input-group { margin-bottom: 15px; }
+  .input-group label { display: block; margin-bottom: 5px; color: #aaa; font-size: 14px; }
+  .input-group input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #333; background: #1a1a1a; color: #fff; font-size: 16px; box-sizing: border-box; }
+  .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; background: #20e58a; color: #000; font-weight: bold; font-size: 18px; cursor: pointer; margin-top: 10px; }
+  .btn:active { opacity: 0.8; }
+  .switch-text { text-align: center; margin-top: 20px; color: #888; font-size: 14px; }
+  .switch-text span { color: #20e58a; font-weight: bold; cursor: pointer; }
+
+  /* Dashboard */
+  .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
+  .header h2 { margin: 0; color: #20e58a; }
+  .logout-btn { background: #ff4d67; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; }
+  
+  .card { background: #1a1a1a; border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; }
+  .card h3 { margin-top: 0; color: #fff; border-bottom: 1px solid #333; padding-bottom: 10px; }
+  
+  /* League Table */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; color: #888; padding: 10px 5px; border-bottom: 2px solid #333; }
+  td { padding: 10px 5px; border-bottom: 1px solid #222; }
+  .team-name { font-weight: bold; }
+  .pts { color: #20e58a; font-weight: 900; }
+
+  /* AI Result Box */
+  textarea { width: 100%; height: 100px; padding: 15px; border-radius: 10px; border: 1px solid #333; background: #0a0a0a; color: #fff; font-size: 14px; box-sizing: border-box; margin-bottom: 10px; resize: none; }
+  .ai-btn { background: #8b5cf6; color: #fff; margin-bottom: 10px; }
+  
+  /* WhatsApp Share */
+  .share-btn { background: #25D366; color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px; }
+</style>
+</head>
+<body>
+
+  <!-- SPLASH SCREEN -->
+  <div id="splash" class="screen active" style="justify-content: center; align-items: center; background: #000;">
+    <div class="logo">⚽</div>
+    <h2 style="color:#fff;">Effotball League</h2>
+  </div>
+
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="screen">
+    <div class="logo">⚽ League</div>
+    <div class="subtitle">Sign in to manage your league</div>
+    
+    <div class="input-group">
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="you@example.com">
+    </div>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="authPassword" placeholder="••••••••">
+    </div>
+    <div class="input-group" id="nameField" style="display:none;">
+      <label>Your Name</label>
+      <input type="text" id="authName" placeholder="Kenny">
+    </div>
+    
+    <button class="btn" id="authSubmit">Login</button>
+    <div class="switch-text" id="switchAuth">Don't have an account? <span>Sign Up</span></div>
+  </div>
+
+  <!-- DASHBOARD SCREEN -->
+  <div id="dashboardScreen" class="screen">
+    <div class="header">
+      <h2>League Table</h2>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+
+    <!-- League Table Card -->
+    <div class="card">
+      <h3>Current Standings</h3>
+      <table>
+        <thead>
+          <tr><th>Pos</th><th>Team</th><th>P</th><th>GD</th><th>Pts</th></tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="5" style="text-align:center; color:#888;">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- AI Result Input -->
+    <div class="card">
+      <h3>Post Result with AI</h3>
+      <p style="color:#888; font-size:12px;">Paste a match result (e.g. "Arsenal 2 - 1 Chelsea"). AI will calculate it.</p>
+      <textarea id="aiInput" placeholder="Paste result here..."></textarea>
+      <button class="btn ai-btn" id="processAiBtn">✨ Process Result</button>
+    </div>
+
+    <!-- WhatsApp Share -->
+    <button class="btn share-btn" id="shareBtn">
+      Share League to WhatsApp
+    </button>
+  </div>
+
+  <script src="capacitor.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // 1. CONFIGURATION
+    const SUPABASE_URL = "https://iosbnzxehkvmfwkdwgxp.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_MWKrB8KqnKXkgVDeDxMyPA_1rBSdpgz";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const AI_ENDPOINT = SUPABASE_URL + "/functions/v1/swift-worker";
+
+    // 2. SCREEN NAVIGATION
+    setTimeout(() => {
+      document.getElementById('splash').classList.remove('active');
+      
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          showDashboard();
+        } else {
+          document.getElementById('loginScreen').classList.add('active');
+        }
+      });
+    }, 2000);
+
+    function showDashboard() {
+      document.getElementById('loginScreen').classList.remove('active');
+      document.getElementById('dashboardScreen').classList.add('active');
+      loadLeagueTable();
+    }
+
+    // 3. AUTHENTICATION
+    let isSignUp = false;
+    document.getElementById('switchAuth').addEventListener('click', () => {
+      isSignUp = !isSignUp;
+      document.getElementById('nameField').style.display = isSignUp ? 'block' : 'none';
+      document.getElementById('authSubmit').innerText = isSignUp ? 'Create Account' : 'Login';
+      document.getElementById('switchAuth').innerHTML = isSignUp ? 'Already have an account? <span>Login</span>' : "Don't have an account? <span>Sign Up</span>";
+    });
+
+    document.getElementById('authSubmit').addEventListener('click', async () => {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      const name = document.getElementById('authName').value;
+      
+      if (!email || !password) return alert("Please fill in all fields");
+
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: { data: { display_name: name } } 
+        });
+        if (error) alert(error.message);
+        else alert("Account created! Check your email to confirm.");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) alert(error.message);
+        else showDashboard();
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      location.reload();
+    });
+
+    // 4. LEAGUE TABLE
+    async function loadLeagueTable() {
+      const tbody = document.getElementById('tableBody');
+      const { data, error } = await supabase.from('teams').select('*').order('points', { ascending: false });
+      
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color:#ff4d67;text-align:center;">Create a table named 'teams' in Supabase.</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#888;">No teams yet. Post a result!</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map((team, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td class="team-name">${team.name}</td>
+          <td>${team.played || 0}</td>
+          <td>${team.goal_difference || 0}</td>
+          <td class="pts">${team.points || 0}</td>
+        </tr>
+      `).join('');
+    }
+
+    // 5. AI PROCESSING
+    document.getElementById('processAiBtn').addEventListener('click', async () => {
+      const text = document.getElementById('aiInput').value;
+      if (!text) return alert("Paste a result first");
+
+      const btn = document.getElementById('processAiBtn');
+      btn.innerText = "🤖 AI is thinking...";
+      btn.disabled = true;
+
+      try {
+        const response = await fetch(AI_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY },
+          body: JSON.stringify({ 
+            question: `Extract the football match result from this text and return ONLY a JSON object like this: {"home_team": "Name", "home_score": 2, "away_team": "Name", "away_score": 1}. Text: "${text}"`,
+            current_date: new Date().toISOString().split("T")[0]
+          })
+        });
+
+        const data = await response.json();
+        alert("AI extracted: " + data.answer);
+        
+      } catch (e) {
+        alert("AI Error: " + e.message);
+      } finally {
+        btn.innerText = "✨ Process Result";
+        btn.disabled = false;
+      }
+    });
+
+    // 6. WHATSAPP SHARE
+    document.getElementById('shareBtn').addEventListener('click', async () => {
+      try {
+        if (window.Capacitor && window.Capacitor.Plugins.Share) {
+          await window.Capacitor.Plugins.Share.share({
+            title: 'Effotball League',
+            text: 'Join our football league!',
+            url: 'https://your-website-link.com',
+            dialogTitle: 'Share League'
+          });
+        } else {
+          alert("Share plugin not found. Did you install @capacitor/share?");
+        }
+      } catch (e) {
+        alert("WhatsApp not installed or share failed.");
+      }
+    });
+  </script>
+</body>
+        </html>
