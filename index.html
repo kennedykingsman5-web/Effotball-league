@@ -73,14 +73,16 @@
   <script src="capacitor.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // FAILSAFE: Forces the app to leave the splash screen instantly
+    // FAILSAFE: Forces the app to leave the splash screen
     setTimeout(() => {
       document.getElementById('splash').classList.remove('active');
       document.getElementById('loginScreen').classList.add('active');
-    }, 1500); // Reduced to 1.5 seconds
+    }, 1500);
 
-    const SUPABASE_URL = "https://iosbnzxehkvmfwkdwgxp.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_MWKrB8KqnKXkgVDeDxMyPA_1rBSdpgz";
+    // YOUR NEW SUPABASE DETAILS
+    const SUPABASE_URL = "https://nbedmzungvwerpwtkatq.supabase.co";
+    const SUPABASE_KEY = "PASTE_YOUR_KEY_HERE"; // <--- REPLACE THIS WITH YOUR PUBLISHABLE KEY
+    
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const AI_ENDPOINT = SUPABASE_URL + "/functions/v1/swift-worker";
 
