@@ -73,10 +73,11 @@
   <script src="capacitor.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // FAILSAFE: Forces the app to leave the splash screen instantly
     setTimeout(() => {
       document.getElementById('splash').classList.remove('active');
       document.getElementById('loginScreen').classList.add('active');
-    }, 3000);
+    }, 1500); // Reduced to 1.5 seconds
 
     const SUPABASE_URL = "https://iosbnzxehkvmfwkdwgxp.supabase.co";
     const SUPABASE_KEY = "sb_publishable_MWKrB8KqnKXkgVDeDxMyPA_1rBSdpgz";
@@ -88,7 +89,7 @@
         const { data } = await supabase.auth.getSession();
         if (data && data.session) showDashboard();
       } catch (e) {}
-    }, 3500);
+    }, 2000);
 
     function showDashboard() {
       document.getElementById('loginScreen').classList.remove('active');
