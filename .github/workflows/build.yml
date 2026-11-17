@@ -31,7 +31,7 @@ jobs:
       run: |
         mkdir www
         cp index.html www/index.html
-        echo '{"appId":"com.effotball.league","appName":"Effotball League","webDir":"www"}' > capacitor.config.json
+        echo '{"appId":"com.effotball.league","appName":"Effotball League","webDir":"www","plugins":{"SplashScreen":{"launchAutoHide":true,"launchShowDuration":0,"backgroundColor":"#000000"}}}' > capacitor.config.json
         
     - name: Create Android Project
       run: npx cap add android
