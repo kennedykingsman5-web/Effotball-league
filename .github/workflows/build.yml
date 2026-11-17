@@ -36,13 +36,6 @@ jobs:
     - name: Create Android Project
       run: npx cap add android
       
-    - name: Generate App Icon
-      run: |
-        mkdir -p resources
-        # If you still have your image, you can uncomment the next line
-        # cp image_341a8827.jpg resources/icon.jpg
-        # npx capacitor-assets generate --android
-      
     - name: Patch Android SDK and Permissions
       run: |
         sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/g' android/variables.gradle
@@ -50,8 +43,6 @@ jobs:
         sed -i 's/minSdkVersion = .*/minSdkVersion = 23/g' android/variables.gradle
         sed -i "s/classpath 'com.android.tools.build:gradle:.*'/classpath 'com.android.tools.build:gradle:8.6.0'/g" android/build.gradle
         sed -i 's/gradle-.*-all.zip/gradle-8.9-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
-        
-        # Internet permission for Supabase
         sed -i '/<application/i \
         <uses-permission android:name="android.permission.INTERNET" /> \
         ' android/app/src/main/AndroidManifest.xml
