@@ -1,4 +1,4 @@
-name: Build Effotball League APK
+name: Build Football League APK
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
       run: |
         mkdir www
         cp index.html www/index.html
-        echo '{"appId":"com.effotball.league","appName":"Effotball League","webDir":"www","plugins":{"SplashScreen":{"launchAutoHide":true,"launchShowDuration":0,"backgroundColor":"#000000"}}}' > capacitor.config.json
+        echo '{"appId":"com.football.league","appName":"Football League","webDir":"www","plugins":{"SplashScreen":{"launchAutoHide":true,"launchShowDuration":0,"backgroundColor":"#000000"}}}' > capacitor.config.json
         
     - name: Create Android Project
       run: npx cap add android
@@ -66,7 +66,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         tag_name: "v${{ github.run_number }}"
-        name: "Effotball League Build ${{ github.run_number }}"
+        name: "Football League Build ${{ github.run_number }}"
         files: android/app/build/outputs/apk/debug/app-debug.apk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
