@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Effotball League</title>
+<title>Football League</title>
 <style>
   body { margin: 0; background: #0a0a0a; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
   .screen { display: none; flex-direction: column; min-height: 100vh; padding: 20px; box-sizing: border-box; }
@@ -36,7 +36,7 @@
 
   <div id="splash" class="screen active" style="justify-content: center; align-items: center; background: #000;">
     <div class="logo">⚽</div>
-    <h2 style="color:#fff;">Effotball League</h2>
+    <h2 style="color:#fff;">Football League</h2>
   </div>
 
   <div id="loginScreen" class="screen">
@@ -73,16 +73,13 @@
   <script src="capacitor.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // FAILSAFE: Forces the app to leave the splash screen
     setTimeout(() => {
       document.getElementById('splash').classList.remove('active');
       document.getElementById('loginScreen').classList.add('active');
     }, 1500);
 
-    // YOUR NEW SUPABASE DETAILS
     const SUPABASE_URL = "https://nbedmzungvwerpwtkatq.supabase.co";
-    const SUPABASE_KEY = "PASTE_YOUR_KEY_HERE"; // <--- REPLACE THIS WITH YOUR PUBLISHABLE KEY
-    
+    const SUPABASE_KEY = "PASTE_YOUR_KEY_HERE";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const AI_ENDPOINT = SUPABASE_URL + "/functions/v1/swift-worker";
 
@@ -161,10 +158,10 @@
     document.getElementById('shareBtn').addEventListener('click', async () => {
       try {
         if (window.Capacitor && window.Capacitor.Plugins.Share) {
-          await window.Capacitor.Plugins.Share.share({ title: 'Effotball League', text: 'Join our football league!', url: 'https://your-website-link.com', dialogTitle: 'Share League' });
+          await window.Capacitor.Plugins.Share.share({ title: 'Football League', text: 'Join our football league!', url: 'https://your-website-link.com', dialogTitle: 'Share League' });
         }
       } catch (e) { alert("Share failed."); }
     });
   </script>
 </body>
-</html>
+  </html>
